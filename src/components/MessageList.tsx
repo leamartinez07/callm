@@ -8,9 +8,13 @@ interface MessageListProps {
   messages: IMessage[];
   currentUserId: string;
   onLoadMore: () => Promise<boolean>;
+  onEditMessage?: (messageId: string, content: string) => Promise<void>;
+  onDeleteMessage?: (messageId: string) => Promise<void>;
+  roomId?: string;
+  token?: string;
 }
 
-export function MessageList({ messages, currentUserId, onLoadMore }: MessageListProps) {
+export function MessageList({ messages, currentUserId, onLoadMore, onEditMessage, onDeleteMessage }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
   const isAutoScrolling = useRef(true);
@@ -53,7 +57,7 @@ export function MessageList({ messages, currentUserId, onLoadMore }: MessageList
 
       {messages.length === 0 && (
         <div className="flex items-center justify-center h-full">
-          <p className="text-zinc-500 text-sm">No messages yet. Say hello! 👋</p>
+          <p className="text-zinc-500 text-sm">No hay mensajes aún. ¡Empezá la conversación!</p>
         </div>
       )}
 
@@ -76,6 +80,8 @@ export function MessageList({ messages, currentUserId, onLoadMore }: MessageList
             message={msg}
             isOwn={isOwn}
             showSender={showSender}
+            onEdit={isOwn && onEditMessage ? (content) => onEditMessage(msg._id, content) : undefined}
+            onDelete={isOwn && onDeleteMessage ? () => onDeleteMessage(msg._id) : undefined}
           />
         );
       })}

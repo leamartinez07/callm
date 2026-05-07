@@ -7,6 +7,7 @@ interface AvatarProps {
   src?: string;
   size?: "sm" | "md" | "lg";
   online?: boolean;
+  className?: string;
 }
 
 const sizes = { sm: "h-7 w-7 text-xs", md: "h-9 w-9 text-sm", lg: "h-11 w-11 text-base" };
@@ -26,10 +27,10 @@ function hue(name: string) {
   return Math.abs(h) % 360;
 }
 
-export function Avatar({ name, src, size = "md", online }: AvatarProps) {
+export function Avatar({ name, src, size = "md", online, className }: AvatarProps) {
   const bg = `hsl(${hue(name)}, 55%, 40%)`;
   return (
-    <div className="relative shrink-0">
+    <div className={clsx("relative shrink-0", className)}>
       {src ? (
         <img
           src={src}

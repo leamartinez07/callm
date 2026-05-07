@@ -12,6 +12,12 @@ interface UseChatOptions {
 
 export function useChat({ roomId, token, initialMessages = [] }: UseChatOptions) {
   const [messages, setMessages] = useState<IMessage[]>(initialMessages);
+
+  // Reset messages when room changes
+  useEffect(() => {
+    setMessages(initialMessages);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId]);
   const [onlineCount, setOnlineCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const channelRef = useRef<ReturnType<ReturnType<typeof getPusherClient>["subscribe"]> | null>(null);
@@ -50,7 +56,10 @@ export function useChat({ roomId, token, initialMessages = [] }: UseChatOptions)
     });
 
     channel.bind(EVENTS.NEW_MESSAGE, ({ message }: { message: IMessage }) => {
-      setMessages((prev) => [...prev, message]);
+      setMessages((prev) => {
+        if (prev.some((m) => m._id === message._id)) return prev;
+        return [...prev, message];
+      });
     });
 
     channel.bind(EVENTS.MESSAGE_EDITED, ({ message }: { message: IMessage }) => {
@@ -78,7 +87,11 @@ export function useChat({ roomId, token, initialMessages = [] }: UseChatOptions)
       });
       const json = await res.json();
       if (json.success) {
-        setMessages((prev) => [...json.data, ...prev]);
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m._id));
+          const newMessages = (json.data as IMessage[]).filter((m) => !existingIds.has(m._id));
+          return [...newMessages, ...prev];
+        });
         return json.meta?.hasMore as boolean;
       }
       return false;
@@ -100,5 +113,29 @@ export function useChat({ roomId, token, initialMessages = [] }: UseChatOptions)
     [roomId, token]
   );
 
-  return { messages, onlineCount, isConnected, loadMore, sendMessage };
+  const editMessage = useCallback(
+    async (messageId: string, content: string) => {
+      await fetch(`/api/rooms/${roomId}/messages/${messageId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content }),
+      });
+    },
+    [roomId, token]
+  );
+
+  const deleteMessage = useCallback(
+    async (messageId: string) => {
+      await fetch(`/api/rooms/${roomId}/messages/${messageId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    },
+    [roomId, token]
+  );
+
+  return { messages, onlineCount, isConnected, loadMore, sendMessage, editMessage, deleteMessage };
 }

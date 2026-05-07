@@ -5,12 +5,13 @@ import { updateRoomSchema } from "@/lib/schemas";
 import Room from "@/models/Room";
 import Message from "@/models/Message";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_: Request, { params }: Params) {
+  const { id } = await params;
   try {
     await connectDB();
-    const room = await Room.findById(params.id)
+    const room = await Room.findById(id)
       .populate("owner", "name avatar")
       .populate("members", "name avatar");
 
@@ -23,6 +24,7 @@ export async function GET(_: Request, { params }: Params) {
 }
 
 export async function PATCH(request: Request, { params }: Params) {
+  const { id } = await params;
   const auth = await getAuthUser(request);
   if (!auth) return unauthorized();
 
@@ -31,7 +33,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
   try {
     await connectDB();
-    const room = await Room.findById(params.id);
+    const room = await Room.findById(id);
     if (!room) return notFound("Room not found");
     if (room.owner.toString() !== auth.sub) return forbidden("Only the room owner can update it");
 
@@ -47,18 +49,19 @@ export async function PATCH(request: Request, { params }: Params) {
 }
 
 export async function DELETE(request: Request, { params }: Params) {
+  const { id } = await params;
   const auth = await getAuthUser(request);
   if (!auth) return unauthorized();
 
   try {
     await connectDB();
-    const room = await Room.findById(params.id);
+    const room = await Room.findById(id);
     if (!room) return notFound("Room not found");
     if (room.owner.toString() !== auth.sub) return forbidden("Only the room owner can delete it");
 
     await Promise.all([
       room.deleteOne(),
-      Message.deleteMany({ room: params.id }),
+      Message.deleteMany({ room: id }),
     ]);
 
     return ok({ data: { deleted: true } });

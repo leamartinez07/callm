@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { MessageSquare } from "lucide-react";
+import { IconChat } from "@/components/icons";
 import { Sidebar } from "@/components/Sidebar";
 import { ChatRoom } from "@/components/ChatRoom";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +13,7 @@ import { CHANNELS, EVENTS } from "@/lib/pusher";
 export default function ChatPage() {
   const router = useRouter();
   const { user, token, loading, logout } = useAuth();
+  const [currentUser, setCurrentUser] = useState(user);
   const [rooms, setRooms] = useState<IRoom[]>([]);
   const [activeRoom, setActiveRoom] = useState<IRoom | null>(null);
   const [initialMessages, setInitialMessages] = useState<IMessage[]>([]);
@@ -22,6 +23,8 @@ export default function ChatPage() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
+    } else if (user) {
+      setCurrentUser(user);
     }
   }, [loading, user, router]);
 
@@ -70,8 +73,9 @@ export default function ChatPage() {
     };
   }, [token]);
 
-  async function selectRoom(roomId: string) {
-    const room = rooms.find((r) => r._id === roomId);
+  // roomOverride: pass room directly to avoid state-timing issues
+  async function selectRoom(roomId: string, roomOverride?: IRoom) {
+    const room = roomOverride ?? rooms.find((r) => r._id === roomId);
     if (!room) return;
     setActiveRoom(room);
 
@@ -95,21 +99,29 @@ export default function ChatPage() {
     });
     const json = await res.json();
     if (json.success) {
-      setRooms((prev) => [json.data, ...prev]);
-      await selectRoom(json.data._id);
+      // Dedup: Pusher may have already added it via ROOM_CREATED event
+      setRooms((prev) => {
+        if (prev.some((r) => r._id === json.data._id)) return prev;
+        return [json.data, ...prev];
+      });
+      // Pass room directly — state update is async, rooms[] not yet updated
+      await selectRoom(json.data._id, json.data);
     }
   }
 
   async function joinRoom(roomId: string) {
     if (!token) return;
+    // Grab room from current state BEFORE the async fetch (avoids stale closure after fetchRooms)
+    const roomOverride = rooms.find((r) => r._id === roomId);
     const res = await fetch(`/api/rooms/${roomId}/members`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
     const json = await res.json();
     if (json.success) {
-      // Refresh rooms list to update member status
       await fetchRooms();
+      // Pass room directly — state from fetchRooms may not be applied yet
+      if (roomOverride) await selectRoom(roomId, roomOverride);
     }
   }
 
@@ -120,28 +132,30 @@ export default function ChatPage() {
 
   if (loading || roomsLoading) {
     return (
-      <div className="min-h-screen bg-[#111118] flex items-center justify-center">
+      <div className="min-h-screen bg-surface flex items-center justify-center">
         <div className="flex items-center gap-2.5 text-zinc-500">
-          <MessageSquare size={20} className="text-accent animate-pulse" />
+          <IconChat width={20} height={20} className="text-accent animate-pulse" />
           <span className="text-sm">Loading ChatFlow…</span>
         </div>
       </div>
     );
   }
 
-  if (!user || !token) return null;
+  if (!currentUser || !token) return null;
 
   return (
-    <div className="h-screen flex overflow-hidden bg-[#111118]">
+    <div className="h-screen flex overflow-hidden bg-surface">
       <Sidebar
-        user={user}
+        user={currentUser}
         rooms={rooms}
         activeRoomId={activeRoom?._id}
         onSelectRoom={selectRoom}
         onCreateRoom={createRoom}
         onJoinRoom={joinRoom}
         onLogout={handleLogout}
-        currentUserId={user._id}
+        currentUserId={currentUser._id}
+        token={token}
+        onUserUpdate={setCurrentUser}
       />
 
       <main className="flex-1 flex flex-col overflow-hidden">
@@ -149,13 +163,17 @@ export default function ChatPage() {
           <ChatRoom
             room={activeRoom}
             token={token}
-            currentUserId={user._id}
+            currentUserId={currentUser._id}
             initialMessages={initialMessages}
+            onRoomDeleted={(roomId) => {
+              setRooms((prev) => prev.filter((r) => r._id !== roomId));
+              setActiveRoom(null);
+            }}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
             <div className="h-16 w-16 rounded-2xl bg-accent/10 flex items-center justify-center mb-4">
-              <MessageSquare size={28} className="text-accent" />
+              <IconChat width={28} height={28} className="text-accent" />
             </div>
             <h2 className="text-lg font-semibold text-white mb-2">
               Welcome to ChatFlow
@@ -165,6 +183,7 @@ export default function ChatPage() {
             </p>
           </div>
         )}
+
       </main>
     </div>
   );

@@ -43,7 +43,12 @@ export function useAuth() {
       body: JSON.stringify({ email, password }),
     });
     const json = await res.json();
-    if (!json.success) throw new Error(json.error);
+    if (!json.success) {
+      const detail = json.details
+        ? Object.values(json.details as Record<string, string[]>).flat().join(" · ")
+        : null;
+      throw new Error(detail || json.error);
+    }
     localStorage.setItem(TOKEN_KEY, json.data.token);
     setToken(json.data.token);
     setUser(json.data.user);
@@ -58,7 +63,12 @@ export function useAuth() {
         body: JSON.stringify({ name, email, password }),
       });
       const json = await res.json();
-      if (!json.success) throw new Error(json.error);
+      if (!json.success) {
+        const detail = json.details
+          ? Object.values(json.details as Record<string, string[]>).flat().join(" · ")
+          : null;
+        throw new Error(detail || json.error);
+      }
       localStorage.setItem(TOKEN_KEY, json.data.token);
       setToken(json.data.token);
       setUser(json.data.user);

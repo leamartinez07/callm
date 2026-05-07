@@ -17,15 +17,18 @@ export function getPusherClient(): PusherJS {
   if (!pusherClientInstance) {
     pusherClientInstance = new PusherJS(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-      authEndpoint: "/api/pusher/auth",
-      auth: {
-        headers: {
+      // channelAuthorization reads the token dynamically on each auth request
+      // so the singleton never has a stale/empty token
+      channelAuthorization: {
+        transport: "ajax",
+        endpoint: "/api/pusher/auth",
+        headersProvider: () => ({
           Authorization: `Bearer ${
             typeof window !== "undefined"
-              ? localStorage.getItem("chatflow_token") ?? ""
+              ? (localStorage.getItem("chatflow_token") ?? "")
               : ""
           }`,
-        },
+        }),
       },
     });
   }

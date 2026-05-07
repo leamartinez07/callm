@@ -4,13 +4,14 @@ import { ok, unauthorized, forbidden, notFound, err, serverError } from "@/lib/r
 import Room from "@/models/Room";
 import { pusherServer, CHANNELS, EVENTS } from "@/lib/pusher";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 // GET /api/rooms/:id/members — list members
 export async function GET(_: Request, { params }: Params) {
+  const { id } = await params;
   try {
     await connectDB();
-    const room = await Room.findById(params.id).populate("members", "name avatar email");
+    const room = await Room.findById(id).populate("members", "name avatar email");
     if (!room) return notFound("Room not found");
     return ok({ data: room.members });
   } catch (e) {
@@ -21,12 +22,13 @@ export async function GET(_: Request, { params }: Params) {
 
 // POST /api/rooms/:id/members — join room
 export async function POST(request: Request, { params }: Params) {
+  const { id } = await params;
   const auth = await getAuthUser(request);
   if (!auth) return unauthorized();
 
   try {
     await connectDB();
-    const room = await Room.findById(params.id);
+    const room = await Room.findById(id);
     if (!room) return notFound("Room not found");
     if (room.type === "private") return forbidden("Cannot join a private room without an invite");
 
@@ -36,7 +38,7 @@ export async function POST(request: Request, { params }: Params) {
     room.members.push(auth.sub as unknown as typeof room.members[0]);
     await room.save();
 
-    await pusherServer.trigger(CHANNELS.room(params.id), EVENTS.MEMBER_JOINED, {
+    await pusherServer.trigger(CHANNELS.room(id), EVENTS.MEMBER_JOINED, {
       userId: auth.sub,
       name: auth.name,
     });
@@ -50,12 +52,13 @@ export async function POST(request: Request, { params }: Params) {
 
 // DELETE /api/rooms/:id/members — leave room
 export async function DELETE(request: Request, { params }: Params) {
+  const { id } = await params;
   const auth = await getAuthUser(request);
   if (!auth) return unauthorized();
 
   try {
     await connectDB();
-    const room = await Room.findById(params.id);
+    const room = await Room.findById(id);
     if (!room) return notFound("Room not found");
 
     if (room.owner.toString() === auth.sub) {
@@ -65,7 +68,7 @@ export async function DELETE(request: Request, { params }: Params) {
     room.members = room.members.filter((m) => m.toString() !== auth.sub);
     await room.save();
 
-    await pusherServer.trigger(CHANNELS.room(params.id), EVENTS.MEMBER_LEFT, {
+    await pusherServer.trigger(CHANNELS.room(id), EVENTS.MEMBER_LEFT, {
       userId: auth.sub,
     });
 

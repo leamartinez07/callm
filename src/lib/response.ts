@@ -12,7 +12,10 @@ export function ok<T>({ data, status = 200, meta }: SuccessOptions<T>) {
 }
 
 export function err(error: string, status = 400, details?: unknown) {
-  return NextResponse.json({ success: false, error, ...(details && { details }) }, { status });
+  return NextResponse.json(
+    { success: false, error, ...(details !== undefined ? { details } : {}) },
+    { status }
+  );
 }
 
 export const unauthorized = (msg = "Unauthorized") => err(msg, 401);

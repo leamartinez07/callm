@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, LogOut, MessageSquare } from "lucide-react";
+import { IconChat, IconPlus, IconSearch, IconLogout } from "./icons";
 import { clsx } from "clsx";
 import { Avatar } from "./Avatar";
 import { RoomCard } from "./RoomCard";
+import { ProfilePanel } from "./ProfilePanel";
+import { InviteNotifications } from "./InviteNotifications";
 import type { IRoom, IUser } from "@/types";
 
 interface SidebarProps {
@@ -16,6 +18,8 @@ interface SidebarProps {
   onJoinRoom: (roomId: string) => Promise<void>;
   onLogout: () => void;
   currentUserId: string;
+  token: string;
+  onUserUpdate: (user: IUser) => void;
 }
 
 export function Sidebar({
@@ -27,12 +31,15 @@ export function Sidebar({
   onJoinRoom,
   onLogout,
   currentUserId,
+  token,
+  onUserUpdate,
 }: SidebarProps) {
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [newRoomDesc, setNewRoomDesc] = useState("");
   const [creating, setCreating] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const filtered = rooms.filter((r) =>
     r.name.toLowerCase().includes(search.toLowerCase())
@@ -65,21 +72,22 @@ export function Sidebar({
     <aside className="w-72 shrink-0 flex flex-col bg-surface-1 border-r border-white/5">
       {/* Header */}
       <div className="px-4 py-4 border-b border-white/5 flex items-center gap-2">
-        <MessageSquare size={18} className="text-accent shrink-0" />
+        <IconChat width={18} height={18} className="text-accent shrink-0" />
         <span className="font-bold text-white text-sm tracking-tight">ChatFlow</span>
+        <InviteNotifications token={token} currentUserId={currentUserId} />
         <button
           onClick={() => setShowCreate(true)}
-          className="ml-auto h-7 w-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition"
+          className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition"
           title="New room"
         >
-          <Plus size={16} />
+          <IconPlus width={16} height={16} />
         </button>
       </div>
 
       {/* Search */}
       <div className="px-3 py-2.5 border-b border-white/5">
         <div className="flex items-center gap-2 bg-surface-2 rounded-lg px-3 py-1.5">
-          <Search size={13} className="text-zinc-600" />
+          <IconSearch width={13} height={13} className="text-zinc-600" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -119,10 +127,7 @@ export function Sidebar({
                 room={r}
                 isActive={r._id === activeRoomId}
                 isMember={false}
-                onClick={async () => {
-                  await onJoinRoom(r._id);
-                  onSelectRoom(r._id);
-                }}
+                onClick={() => onJoinRoom(r._id)}
               />
             ))}
           </div>
@@ -135,17 +140,30 @@ export function Sidebar({
 
       {/* User footer */}
       <div className="px-3 py-3 border-t border-white/5 flex items-center gap-2.5">
-        <Avatar name={user.name} src={user.avatar} size="sm" online />
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-zinc-200 truncate">{user.name}</p>
-          <p className="text-[10px] text-zinc-600 truncate">{user.email}</p>
-        </div>
+        <button
+          onClick={() => setShowProfile(true)}
+          className="flex-1 flex items-center gap-2.5 min-w-0 hover:opacity-70 transition"
+        >
+          {user.avatar ? (
+            <img
+              src={user.avatar}
+              alt={user.name}
+              className="w-7 h-7 rounded-lg object-cover shrink-0"
+            />
+          ) : (
+            <Avatar name={user.name} size="sm" online />
+          )}
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-xs font-semibold text-zinc-200 truncate">{user.name}</p>
+            <p className="text-[10px] text-zinc-600 truncate">{user.email}</p>
+          </div>
+        </button>
         <button
           onClick={onLogout}
           className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-red-500/10 text-zinc-600 hover:text-red-400 transition"
           title="Logout"
         >
-          <LogOut size={14} />
+          <IconLogout width={14} height={14} />
         </button>
       </div>
 
@@ -189,6 +207,16 @@ export function Sidebar({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Profile panel */}
+      {showProfile && (
+        <ProfilePanel
+          user={user}
+          token={token}
+          onClose={() => setShowProfile(false)}
+          onUpdate={onUserUpdate}
+        />
       )}
     </aside>
   );

@@ -10,16 +10,17 @@ const config: Config = {
     extend: {
       colors: {
         surface: {
-          DEFAULT: "#111118",
-          1: "#1a1a24",
-          2: "#22222e",
-          3: "#2a2a38",
+          DEFAULT: "#0a0812",
+          1: "#100e1c",
+          2: "#16132a",
+          3: "#1e1b30",
         },
         accent: {
-          DEFAULT: "#7c6ff7",
-          hover: "#6d60f0",
-          muted: "#7c6ff720",
+          DEFAULT: "#9d5bf4",
+          hover: "#8a47e8",
+          muted: "#9d5bf415",
         },
+        brand: "#c084fc",
       },
     },
   },

@@ -8,7 +8,7 @@ export const registerSchema = z.object({
     .min(8, "Password must be at least 8 characters")
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[0-9]/, "Password must contain at least one number"),
-  avatar: z.string().url().optional(),
+  avatar: z.string().optional(),
 });
 
 export const loginSchema = z.object({
@@ -22,10 +22,16 @@ export const createRoomSchema = z.object({
   type: z.enum(["public", "private"]).default("public"),
 });
 
-export const updateRoomSchema = createRoomSchema.partial();
+export const updateRoomSchema = createRoomSchema.partial().extend({
+  image: z.string().optional(),
+});
 
 export const sendMessageSchema = z.object({
   content: z.string().min(1, "Message cannot be empty").max(2000),
+  type: z.enum(["text", "system", "image", "video", "file"]).default("text").optional(),
+  mediaUrl: z.string().optional(),
+  fileName: z.string().optional(),
+  fileSize: z.number().optional(),
 });
 
 export const editMessageSchema = z.object({

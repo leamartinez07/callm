@@ -13,6 +13,7 @@ export interface IRoomDoc extends Document {
   type: "public" | "private";
   owner: Types.ObjectId;
   members: Types.ObjectId[];
+  image?: string;
   lastMessage?: ILastMessage;
   createdAt: Date;
   updatedAt: Date;
@@ -26,6 +27,7 @@ const RoomSchema = new Schema<IRoomDoc>(
     type: { type: String, enum: ["public", "private"], default: "public" },
     owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
     members: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    image: { type: String },
     lastMessage: {
       content: String,
       sender: String,
@@ -36,10 +38,8 @@ const RoomSchema = new Schema<IRoomDoc>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform(_, ret) {
-        delete ret.__v;
-        return ret;
-      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      transform(_, ret) { delete (ret as any).__v; return ret; },
     },
   }
 );

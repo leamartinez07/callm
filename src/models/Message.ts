@@ -4,7 +4,10 @@ export interface IMessageDoc extends Document {
   content: string;
   room: Types.ObjectId;
   sender: Types.ObjectId;
-  type: "text" | "system";
+  type: "text" | "system" | "image" | "video" | "file";
+  mediaUrl?: string;
+  fileName?: string;
+  fileSize?: number;
   editedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -15,16 +18,17 @@ const MessageSchema = new Schema<IMessageDoc>(
     content: { type: String, required: true, maxlength: 2000 },
     room: { type: Schema.Types.ObjectId, ref: "Room", required: true },
     sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    type: { type: String, enum: ["text", "system"], default: "text" },
+    type: { type: String, enum: ["text", "system", "image", "video", "file"], default: "text" },
+    mediaUrl: { type: String },
+    fileName: { type: String },
+    fileSize: { type: Number },
     editedAt: { type: Date },
   },
   {
     timestamps: true,
     toJSON: {
-      transform(_, ret) {
-        delete ret.__v;
-        return ret;
-      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      transform(_, ret) { delete (ret as any).__v; return ret; },
     },
   }
 );

@@ -1,9 +1,11 @@
 import { connectDB } from "@/lib/mongodb";
 import { signToken } from "@/lib/auth";
-import { parseBody, ok, err, conflict, serverError } from "@/lib/response";
+import { parseBody, ok, conflict, serverError } from "@/lib/response";
 import { registerSchema } from "@/lib/schemas";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import { sendVerificationEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   const { data, error } = await parseBody(request, registerSchema);
@@ -19,12 +21,21 @@ export async function POST(request: Request) {
     // Hash password
     const hashed = await bcrypt.hash(data.password, 12);
 
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+
     const user = await User.create({
       name: data.name,
       email: data.email,
       password: hashed,
       avatar: data.avatar,
+      emailVerified: false,
+      verificationToken,
     });
+
+    // Send verification email (non-blocking)
+    sendVerificationEmail(data.email, data.name, verificationToken).catch(
+      (e) => console.error("[verify email]", e)
+    );
 
     const token = await signToken({
       sub: user._id.toString(),
@@ -32,7 +43,7 @@ export async function POST(request: Request) {
       name: user.name,
     });
 
-    return ok({ data: { user: user.toJSON(), token }, status: 201 });
+    return ok({ data: { user: user.toJSON(), token, emailVerificationSent: true }, status: 201 });
   } catch (e) {
     console.error("[register]", e);
     return serverError();

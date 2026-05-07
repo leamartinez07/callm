@@ -1,6 +1,6 @@
 "use client";
 
-import { Hash, Lock, Users } from "lucide-react";
+import { IconHash, IconLock, IconPeople } from "./icons";
 import { clsx } from "clsx";
 import { format } from "date-fns";
 import type { IRoom } from "@/types";
@@ -29,9 +29,9 @@ export function RoomCard({ room, isActive, isMember, onClick }: RoomCardProps) {
           )}
         >
           {room.type === "private" ? (
-            <Lock size={14} className={isActive ? "text-accent" : "text-zinc-500"} />
+            <IconLock width={14} height={14} className={isActive ? "text-accent" : "text-zinc-500"} />
           ) : (
-            <Hash size={14} className={isActive ? "text-accent" : "text-zinc-500"} />
+            <IconHash width={14} height={14} className={isActive ? "text-accent" : "text-zinc-500"} />
           )}
         </div>
 
@@ -54,7 +54,7 @@ export function RoomCard({ room, isActive, isMember, onClick }: RoomCardProps) {
             </p>
           ) : (
             <div className="flex items-center gap-1 mt-0.5">
-              <Users size={10} className="text-zinc-600" />
+              <IconPeople width={10} height={10} className="text-zinc-600" />
               <span className="text-[11px] text-zinc-600">{room.memberCount} members</span>
             </div>
           )}

@@ -3,6 +3,7 @@ export interface IUser {
   name: string;
   email: string;
   avatar?: string;
+  bio?: string;
   createdAt: string;
 }
 
@@ -15,6 +16,7 @@ export interface IRoom {
   owner: IUser | string;
   members: Array<IUser | string>;
   memberCount: number;
+  image?: string;
   lastMessage?: {
     content: string;
     sender: string;
@@ -29,8 +31,21 @@ export interface IMessage {
   content: string;
   room: string;
   sender: IUser;
-  type: "text" | "system";
+  type: "text" | "system" | "image" | "video" | "file";
+  mediaUrl?: string;
+  fileName?: string;
+  fileSize?: number;
   editedAt?: string;
+  createdAt: string;
+}
+
+export interface IInvite {
+  _id: string;
+  from: IUser;
+  to: IUser;
+  room?: IRoom;
+  type: "friend" | "room";
+  status: "pending" | "accepted" | "declined";
   createdAt: string;
 }
 

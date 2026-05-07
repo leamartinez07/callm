@@ -34,15 +34,16 @@ export async function GET(request: Request) {
 
     const skip = (params.page - 1) * params.limit;
 
-    const [rooms, total] = await Promise.all([
+    const [roomDocs, total] = await Promise.all([
       Room.find(filter)
         .populate("owner", "name avatar")
         .sort({ updatedAt: -1 })
         .skip(skip)
-        .limit(params.limit)
-        .lean(),
+        .limit(params.limit),
       Room.countDocuments(filter),
     ]);
+
+    const rooms = roomDocs.map((r) => r.toJSON());
 
     return ok({
       data: rooms,

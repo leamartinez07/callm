@@ -1,18 +1,25 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist, Syne } from "next/font/google";
 import "./globals.css";
+import { LocaleProvider } from "@/hooks/useLocale";
 
-const inter = Inter({ subsets: ["latin"] });
+const geist = Geist({ variable: "--font-geist", subsets: ["latin"], display: "swap" });
+const syne  = Syne({ variable: "--font-syne",  subsets: ["latin"], weight: ["700", "800"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "ChatFlow",
-  description: "Real-time chat — Next.js 14 · MongoDB · Pusher",
+  title: "callm",
+  description: "Real-time chat, direct messages & video calls — Next.js 15 · MongoDB · Pusher · WebRTC",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} h-full bg-[#111118]`}>{children}</body>
+      <body className={`${geist.variable} ${syne.variable} font-geist h-full bg-surface`}>
+        <LocaleProvider>
+          {children}
+        </LocaleProvider>
+      </body>
     </html>
   );
 }

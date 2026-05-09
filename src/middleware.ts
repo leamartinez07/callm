@@ -4,6 +4,8 @@ import { verifyToken, extractBearerToken } from "@/lib/auth";
 const PUBLIC_ROUTES = [
   "/api/auth/register",
   "/api/auth/login",
+  "/api/auth/google",   // Google OAuth initiation + callback
+  "/api/auth/verify",
   "/api/health",
 ];
 

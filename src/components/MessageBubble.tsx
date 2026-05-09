@@ -4,6 +4,7 @@ import { useState } from "react";
 import { format, isToday, isYesterday } from "date-fns";
 import { Avatar } from "./Avatar";
 import { IconPaperclip } from "./icons";
+import { useLocale } from "@/hooks/useLocale";
 import type { IMessage } from "@/types";
 import { clsx } from "clsx";
 
@@ -15,10 +16,10 @@ interface MessageBubbleProps {
   onDelete?: () => Promise<void>;
 }
 
-function formatTime(dateStr: string) {
+function formatTime(dateStr: string, yesterdayLabel: string) {
   const d = new Date(dateStr);
   if (isToday(d)) return format(d, "HH:mm");
-  if (isYesterday(d)) return `Yesterday ${format(d, "HH:mm")}`;
+  if (isYesterday(d)) return `${yesterdayLabel} ${format(d, "HH:mm")}`;
   return format(d, "d MMM HH:mm");
 }
 
@@ -39,6 +40,7 @@ function parseMessageContent(content: string) {
 }
 
 export function MessageBubble({ message, isOwn, showSender, onEdit, onDelete }: MessageBubbleProps) {
+  const { t } = useLocale();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(message.content);
   const [saving, setSaving] = useState(false);
@@ -102,11 +104,11 @@ export function MessageBubble({ message, isOwn, showSender, onEdit, onDelete }: 
               <button
                 onClick={handleDelete}
                 className="px-2 py-0.5 text-[10px] font-semibold bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition"
-              >Delete</button>
+              >{t("deleteConfirm")}</button>
               <button
                 onClick={() => setConfirmDelete(false)}
                 className="px-2 py-0.5 text-[10px] text-zinc-500 hover:text-white rounded transition"
-              >Cancel</button>
+              >{t("cancel")}</button>
             </>
           ) : (
             <>
@@ -142,7 +144,7 @@ export function MessageBubble({ message, isOwn, showSender, onEdit, onDelete }: 
         {showSender && (
           <div className={clsx("flex items-baseline gap-2 mb-0.5", isOwn && "flex-row-reverse")}>
             <span className="text-xs font-semibold text-zinc-300">{senderName}</span>
-            <span className="text-[10px] text-zinc-600">{formatTime(message.createdAt)}</span>
+            <span className="text-[10px] text-zinc-600">{formatTime(message.createdAt, t("yesterday"))}</span>
           </div>
         )}
 
@@ -196,18 +198,19 @@ export function MessageBubble({ message, isOwn, showSender, onEdit, onDelete }: 
               }}
               rows={2}
               autoFocus
-              className="w-full bg-surface-2 rounded-xl px-3 py-2 text-sm text-zinc-200 outline-none border border-accent/50 resize-none"
+              className="w-full bg-[#1c1830] rounded-xl px-3 py-2 text-sm text-zinc-200 outline-none border border-[#9d5bf4]/50 resize-none"
             />
             <div className="flex gap-1.5 justify-end">
               <button
                 onClick={() => setIsEditing(false)}
-                className="px-2 py-1 text-xs text-zinc-500 hover:text-white transition"
-              >Cancel</button>
+                className="px-2 py-1 text-xs text-[#7a6d94] hover:text-white transition"
+              >{t("cancel")}</button>
               <button
                 onClick={handleEditSave}
                 disabled={saving || !editValue.trim()}
-                className="px-2.5 py-1 text-xs font-semibold bg-accent text-white rounded-lg transition disabled:opacity-50"
-              >{saving ? "Saving…" : "Save"}</button>
+                className="px-2.5 py-1 text-xs font-semibold text-white rounded-lg transition disabled:opacity-50"
+                style={{ background: "linear-gradient(135deg,#9d5bf4,#c084fc)" }}
+              >{saving ? t("saving") : t("save")}</button>
             </div>
           </div>
         ) : (
@@ -216,9 +219,10 @@ export function MessageBubble({ message, isOwn, showSender, onEdit, onDelete }: 
               className={clsx(
                 "rounded-2xl px-3.5 py-2 text-sm leading-relaxed break-words",
                 isOwn
-                  ? "bg-accent text-white rounded-tr-sm"
-                  : "bg-surface-2 text-zinc-200 rounded-tl-sm"
+                  ? "text-white rounded-tr-sm shadow-sm"
+                  : "bg-[#16132a] border border-[#252040] text-[#d4d4d8] rounded-tl-sm"
               )}
+              style={isOwn ? { background: "linear-gradient(135deg,#9d5bf4 0%,#c084fc 100%)" } : undefined}
             >
               {parsed.text || message.content}
             </div>
@@ -227,11 +231,11 @@ export function MessageBubble({ message, isOwn, showSender, onEdit, onDelete }: 
 
         {!showSender && !isEditing && (
           <span className={clsx("text-[10px] text-zinc-600 mt-0.5 px-1", isOwn && "text-right")}>
-            {formatTime(message.createdAt)}
+            {formatTime(message.createdAt, t("yesterday"))}
           </span>
         )}
         {message.editedAt && !isEditing && (
-          <span className="text-[10px] text-zinc-600 px-1">(edited)</span>
+          <span className="text-[10px] text-zinc-600 px-1">{t("edited")}</span>
         )}
       </div>
     </div>

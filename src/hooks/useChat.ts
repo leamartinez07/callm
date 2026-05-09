@@ -27,7 +27,7 @@ export function useChat({ roomId, token, initialMessages = [] }: UseChatOptions)
 
     // Update auth token in Pusher client
     if (typeof window !== "undefined") {
-      localStorage.setItem("chatflow_token", token);
+      localStorage.setItem("callm_token", token);
     }
 
     const pusher = getPusherClient();

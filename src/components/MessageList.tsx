@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { MessageBubble } from "./MessageBubble";
+import { useLocale } from "@/hooks/useLocale";
 import type { IMessage } from "@/types";
 
 interface MessageListProps {
@@ -15,6 +16,7 @@ interface MessageListProps {
 }
 
 export function MessageList({ messages, currentUserId, onLoadMore, onEditMessage, onDeleteMessage }: MessageListProps) {
+  const { t } = useLocale();
   const bottomRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
   const isAutoScrolling = useRef(true);
@@ -57,7 +59,7 @@ export function MessageList({ messages, currentUserId, onLoadMore, onEditMessage
 
       {messages.length === 0 && (
         <div className="flex items-center justify-center h-full">
-          <p className="text-zinc-500 text-sm">No hay mensajes aún. ¡Empezá la conversación!</p>
+          <p className="text-zinc-500 text-sm">{t("noMessages")}</p>
         </div>
       )}
 

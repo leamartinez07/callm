@@ -2,6 +2,7 @@
 
 import { useState, useRef, KeyboardEvent } from "react";
 import { IconSend, IconPaperclip } from "./icons";
+import { useLocale } from "@/hooks/useLocale";
 import { clsx } from "clsx";
 
 interface MessageInputProps {
@@ -11,6 +12,7 @@ interface MessageInputProps {
 }
 
 export function MessageInput({ onSend, disabled, token }: MessageInputProps) {
+  const { t } = useLocale();
   const [value, setValue] = useState("");
   const [sending, setSending] = useState(false);
   const [preview, setPreview] = useState<{ url: string; name: string } | null>(null);
@@ -91,7 +93,7 @@ export function MessageInput({ onSend, disabled, token }: MessageInputProps) {
   }
 
   return (
-    <div className="px-4 pb-4 pt-2 border-t border-white/5">
+    <div className="px-4 pb-4 pt-3 border-t border-[#252040] bg-[#100e1c]/80">
       {preview && (
         <div className="mb-2 relative inline-block">
           <img
@@ -110,14 +112,14 @@ export function MessageInput({ onSend, disabled, token }: MessageInputProps) {
           </button>
         </div>
       )}
-      <div className="flex items-end gap-2 bg-surface-2 rounded-2xl px-4 py-2.5">
+      <div className="flex items-end gap-2 bg-[#16132a] border border-[#252040] focus-within:border-[#9d5bf4]/40 rounded-2xl px-3 py-2.5 transition">
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || sending || uploading}
-          className="shrink-0 h-8 w-8 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition disabled:opacity-50"
+          className="shrink-0 h-8 w-8 flex items-center justify-center rounded-lg text-[#52525b] hover:text-[#c084fc] hover:bg-[#9d5bf4]/10 transition disabled:opacity-40"
           title="Attach file"
         >
-          <IconPaperclip width={16} height={16} />
+          <IconPaperclip width={15} height={15} />
         </button>
         <input
           ref={fileInputRef}
@@ -133,9 +135,9 @@ export function MessageInput({ onSend, disabled, token }: MessageInputProps) {
           onKeyDown={handleKeyDown}
           onInput={handleInput}
           rows={1}
-          placeholder="Message… (Enter to send, Shift+Enter for newline)"
+          placeholder={t("typeMessage")}
           disabled={disabled || sending || uploading}
-          className="flex-1 bg-transparent resize-none text-sm text-zinc-200 placeholder:text-zinc-600 outline-none max-h-40 leading-relaxed"
+          className="flex-1 bg-transparent resize-none text-sm text-[#d4d4d8] placeholder:text-[#52525b] outline-none max-h-40 leading-relaxed py-0.5"
         />
         <button
           onClick={handleSend}
@@ -143,15 +145,16 @@ export function MessageInput({ onSend, disabled, token }: MessageInputProps) {
           className={clsx(
             "shrink-0 h-8 w-8 flex items-center justify-center rounded-xl transition-all",
             value.trim() && !disabled && !uploading
-              ? "bg-accent text-white hover:bg-accent-hover"
-              : "text-zinc-600 cursor-not-allowed"
+              ? "text-white shadow-sm shadow-[#9d5bf4]/30"
+              : "bg-[#1c1830] text-[#52525b] cursor-not-allowed"
           )}
+          style={value.trim() && !disabled && !uploading ? { background: "linear-gradient(135deg,#9d5bf4,#c084fc)" } : undefined}
         >
-          <IconSend width={16} height={16} />
+          <IconSend width={15} height={15} />
         </button>
       </div>
-      <p className="text-[10px] text-zinc-700 mt-1 pl-1">
-        Enter to send · Shift+Enter for new line
+      <p className="text-[10px] text-[#3a3260] mt-1 pl-1">
+        {t("enterSend")}
       </p>
     </div>
   );

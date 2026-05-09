@@ -21,7 +21,7 @@ export async function sendVerificationEmail(to: string, name: string, token: str
 
   const html = `
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#18181b;color:#e4e4e7;border-radius:12px;">
-      <h2 style="color:#a855f7;margin-bottom:8px;">Verify your ChatFlow email</h2>
+      <h2 style="color:#a855f7;margin-bottom:8px;">Verify your callm email</h2>
       <p style="color:#a1a1aa;margin-bottom:24px;">Hi ${name}, click the button below to verify your email address.</p>
       <a href="${verifyUrl}" style="display:inline-block;background:#a855f7;color:white;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;">Verify Email</a>
       <p style="color:#71717a;margin-top:24px;font-size:12px;">Link expires in 24 hours. If you didn't create an account, ignore this email.</p>
@@ -39,9 +39,9 @@ export async function sendVerificationEmail(to: string, name: string, token: str
   }
 
   await transporter.sendMail({
-    from: `"ChatFlow" <${process.env.EMAIL_USER}>`,
+    from: `"callm" <${process.env.EMAIL_USER}>`,
     to,
-    subject: "Verify your ChatFlow account",
+    subject: "Verify your callm account",
     html,
   });
 }

@@ -12,7 +12,7 @@ export interface IRoom {
   name: string;
   description?: string;
   slug: string;
-  type: "public" | "private";
+  type: "public" | "private" | "direct";
   owner: IUser | string;
   members: Array<IUser | string>;
   memberCount: number;
@@ -49,8 +49,14 @@ export interface IInvite {
   createdAt: string;
 }
 
+export interface IFriend {
+  _id: string;
+  user: IUser;
+  since: string;
+}
+
 export interface JwtPayload {
-  sub: string;   // user _id
+  sub: string;
   email: string;
   name: string;
 }
@@ -68,3 +74,24 @@ export interface ApiError {
 }
 
 export type ApiResponse<T> = ApiSuccess<T> | ApiError;
+
+// ── WebRTC Call types ─────────────────────────────────────────────────────────
+export type CallType = "audio" | "video";
+export type CallState = "idle" | "calling" | "incoming" | "active" | "ended";
+
+export interface CallOffer {
+  callId: string;
+  from: IUser;
+  type: CallType;
+  sdp: RTCSessionDescriptionInit;
+}
+
+export interface CallAnswer {
+  callId: string;
+  sdp: RTCSessionDescriptionInit;
+}
+
+export interface CallIcePayload {
+  callId: string;
+  candidate: RTCIceCandidateInit;
+}

@@ -3,27 +3,71 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
   html, body {
     height: 100%;
-    background-color: #111118;
+    background-color: #0a0812;
   }
 
-  ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(157,91,244,0.18);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(157,91,244,0.35);
   }
+}
+
+/* ── Top stripe (animated gradient, like portfolio) ── */
+.top-stripe {
+  height: 2px;
+  background: linear-gradient(90deg, #7c3aed, #c084fc, #e879f9, #c084fc, #7c3aed);
+  background-size: 300% 100%;
+  animation: shimmer 4s linear infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* ── Gradient text (same as portfolio lilac→pink) ── */
+.gradient-text {
+  background: linear-gradient(135deg, #c084fc 0%, #e879f9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Pulse dot animation ── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1;  transform: scale(1);    }
+  50%       { opacity: .3; transform: scale(0.72); }
+}
+.pulse-dot {
+  animation: pulse-dot 2.2s ease-in-out infinite;
+}
+
+/* ── Card styles matching portfolio ── */
+.calm-card {
+  background: #16132a;
+  border: 1px solid #252040;
+  border-radius: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 0 1px rgba(124,58,237,0.12), 0 8px 32px rgba(0,0,0,0.5);
+}
+.calm-card:hover {
+  border-color: #3a3260;
+  box-shadow: 0 0 0 1px rgba(157,91,244,0.28), 0 12px 40px rgba(0,0,0,0.55);
+}
+
+/* ── Chip / pill style ── */
+.calm-chip {
+  background: #1c1830;
+  border: 1px solid #2e2950;
+  border-radius: 9px;
 }

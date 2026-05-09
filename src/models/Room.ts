@@ -10,7 +10,7 @@ export interface IRoomDoc extends Document {
   name: string;
   description?: string;
   slug: string;
-  type: "public" | "private";
+  type: "public" | "private" | "direct";
   owner: Types.ObjectId;
   members: Types.ObjectId[];
   image?: string;
@@ -24,7 +24,7 @@ const RoomSchema = new Schema<IRoomDoc>(
     name: { type: String, required: true, trim: true, maxlength: 50 },
     description: { type: String, maxlength: 200 },
     slug: { type: String, required: true, unique: true, lowercase: true },
-    type: { type: String, enum: ["public", "private"], default: "public" },
+    type: { type: String, enum: ["public", "private", "direct"], default: "public" },
     owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
     members: [{ type: Schema.Types.ObjectId, ref: "User" }],
     image: { type: String },

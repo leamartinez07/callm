@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
     // Normalize: always return the "other" user
     const friends = accepted.map((inv) => {
-      const fromUser = inv.from as { _id: { toString(): string }; name: string };
+      const fromUser = inv.from as unknown as { _id: { toString(): string }; name: string };
       const isFrom = fromUser._id.toString() === auth.sub;
       return {
         _id: inv._id,

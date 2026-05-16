@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     const user = await User.findOne({ email: data.email }).select("+password");
     if (!user) return unauthorized("Invalid credentials");
 
-    const valid = await bcrypt.compare(data.password, user.password);
+    const valid = await bcrypt.compare(data.password, user.password as string);
     if (!valid) return unauthorized("Invalid credentials");
 
     const token = await signToken({

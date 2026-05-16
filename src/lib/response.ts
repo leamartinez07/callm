@@ -22,6 +22,7 @@ export const unauthorized = (msg = "Unauthorized") => err(msg, 401);
 export const forbidden = (msg = "Forbidden") => err(msg, 403);
 export const notFound = (msg = "Not found") => err(msg, 404);
 export const serverError = (msg = "Internal server error") => err(msg, 500);
+export const badRequest = (msg = "Bad request") => err(msg, 400);
 export const conflict = (msg = "Conflict") => err(msg, 409);
 
 export async function parseBody<T>(

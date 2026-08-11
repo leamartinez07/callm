@@ -82,12 +82,8 @@ function LoginForm() {
           {/* Google sign-in */}
           <a
             href="/api/auth/google"
-            onClick={(event) => {
-              if (window.self !== window.top) {
-                event.preventDefault();
-                window.open("/api/auth/google", "_blank", "noopener,noreferrer");
-              }
-            }}
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center justify-center gap-2.5 w-full bg-[#1c1830] hover:bg-[#252040] border border-[#2e2950] hover:border-[#9d5bf4]/40 text-zinc-200 text-sm font-medium rounded-xl py-2.5 transition mb-4"
           >
             <GoogleIcon />

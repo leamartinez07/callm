@@ -140,24 +140,26 @@ export default function ChatPage() {
 
   return (
     <div className="h-screen flex overflow-hidden bg-[#0a0812]">
-      <Sidebar
-        user={currentUser}
-        rooms={rooms}
-        dms={dms}
-        friends={friends}
-        activeRoomId={activeRoom?._id}
-        onSelectRoom={selectRoom}
-        onCreateRoom={createRoom}
-        onJoinRoom={joinRoom}
-        onOpenDM={openDM}
-        onLogout={() => { logout(); router.push("/login"); }}
-        currentUserId={currentUser._id}
-        token={token}
-        onUserUpdate={setCurrentUser}
-        onFriendsChange={fetchFriends}
-      />
+      <div className={`${activeRoom ? "hidden md:flex" : "flex"} w-full md:w-72 shrink-0`}>
+        <Sidebar
+          user={currentUser}
+          rooms={rooms}
+          dms={dms}
+          friends={friends}
+          activeRoomId={activeRoom?._id}
+          onSelectRoom={selectRoom}
+          onCreateRoom={createRoom}
+          onJoinRoom={joinRoom}
+          onOpenDM={openDM}
+          onLogout={() => { logout(); router.push("/login"); }}
+          currentUserId={currentUser._id}
+          token={token}
+          onUserUpdate={setCurrentUser}
+          onFriendsChange={fetchFriends}
+        />
+      </div>
 
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className={`${activeRoom ? "flex" : "hidden md:flex"} w-full md:flex-1 flex-col overflow-hidden`}>
         {activeRoom ? (
           <ChatRoom
             room={activeRoom}
@@ -165,6 +167,7 @@ export default function ChatPage() {
             currentUserId={currentUser._id}
             currentUser={currentUser}
             initialMessages={initialMessages}
+            onBack={() => setActiveRoom(null)}
             onRoomDeleted={(roomId) => {
               setRooms((prev) => prev.filter((r) => r._id !== roomId));
               setDMs((prev) => prev.filter((r) => r._id !== roomId));

@@ -153,7 +153,7 @@ export function Sidebar({
   const filteredFriends = friends.filter((f) => f.user.name.toLowerCase().includes(q));
 
   return (
-    <aside className="w-72 shrink-0 flex flex-col bg-[#100e1c] border-r border-[#252040]">
+    <aside className="w-full h-full flex flex-col bg-[#100e1c] md:border-r border-[#252040]">
       <div className="top-stripe" />
 
       {/* Header */}

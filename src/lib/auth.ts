@@ -1,20 +1,24 @@
 import { SignJWT, jwtVerify } from "jose";
 import type { JwtPayload } from "@/types";
 
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? "fallback-secret-change-in-production"
-);
+function getSecret(): Uint8Array {
+  const value = process.env.JWT_SECRET;
+  if (!value || value.length < 32) {
+    throw new Error("JWT_SECRET must contain at least 32 characters");
+  }
+  return new TextEncoder().encode(value);
+}
 
 export async function signToken(payload: JwtPayload): Promise<string> {
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(process.env.JWT_EXPIRES_IN ?? "7d")
-    .sign(secret);
+    .sign(getSecret());
 }
 
 export async function verifyToken(token: string): Promise<JwtPayload> {
-  const { payload } = await jwtVerify(token, secret);
+  const { payload } = await jwtVerify(token, getSecret());
   return payload as unknown as JwtPayload;
 }
 

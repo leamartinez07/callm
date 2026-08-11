@@ -6,6 +6,7 @@ import { translations, type Locale, type TranslationKey } from "@/lib/i18n";
 interface LocaleContextValue {
   locale: Locale;
   t: (key: TranslationKey) => string;
+  setLocale: (locale: Locale) => void;
   toggle: () => void;
 }
 
@@ -14,6 +15,7 @@ const STORAGE_KEY = "callm_locale";
 const defaultCtx: LocaleContextValue = {
   locale: "en",
   t: (key) => translations.en[key],
+  setLocale: () => {},
   toggle: () => {},
 };
 
@@ -31,7 +33,17 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
     if (saved === "en" || saved === "es") setLocale(saved);
+    else if (navigator.language.toLowerCase().startsWith("es")) setLocale("es");
     setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
+  const selectLocale = useCallback((next: Locale) => {
+    localStorage.setItem(STORAGE_KEY, next);
+    setLocale(next);
   }, []);
 
   const toggle = useCallback(() => {
@@ -49,7 +61,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   // Suppress SSR mismatch — render with default locale until hydrated
   const value: LocaleContextValue = hydrated
-    ? { locale, t, toggle }
+    ? { locale, t, setLocale: selectLocale, toggle }
     : defaultCtx;
 
   return createElement(LocaleContext.Provider, { value }, children);

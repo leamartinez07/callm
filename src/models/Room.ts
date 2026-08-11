@@ -50,7 +50,6 @@ RoomSchema.virtual("memberCount").get(function () {
 
 RoomSchema.index({ type: 1 });
 RoomSchema.index({ members: 1 });
-RoomSchema.index({ slug: 1 });
 
 // Generate slug from name
 RoomSchema.pre("validate", function (next) {

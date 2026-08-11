@@ -4,7 +4,8 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CallmLogo } from "@/components/CallmLogo";
-import { useAuth } from "@/hooks/useAuth";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { AuthRequestError, useAuth } from "@/hooks/useAuth";
 import { useLocale } from "@/hooks/useLocale";
 
 function GoogleIcon() {
@@ -22,7 +23,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
-  const { t, locale, toggle } = useLocale();
+  const { t } = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -31,9 +32,14 @@ function LoginForm() {
 
   useEffect(() => {
     const verified = searchParams.get("verified");
-    if (verified === "1") setSuccess("Email verified! You can now sign in.");
-    else if (verified === "error") setError("Verification link is invalid or expired.");
-  }, [searchParams]);
+    const authError = searchParams.get("error");
+
+    if (verified === "1") setSuccess(t("emailVerified"));
+    else if (verified === "error") setError(t("verificationInvalid"));
+    else if (authError === "google_cancelled") setError(t("googleCancelled"));
+    else if (authError === "google_not_configured") setError(t("googleNotConfigured"));
+    else if (authError === "google_failed" || authError === "oauth_state") setError(t("googleFailed"));
+  }, [searchParams, t]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,7 +50,16 @@ function LoginForm() {
       await login(email, password);
       router.push("/chat");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      if (err instanceof AuthRequestError) {
+        const messages: Record<string, string> = {
+          AUTH_UNAVAILABLE: t("authUnavailable"),
+          INVALID_CREDENTIALS: t("invalidCredentials"),
+          GOOGLE_ACCOUNT_REQUIRED: t("googleAccountRequired"),
+        };
+        setError((err.code && messages[err.code]) || err.message);
+      } else {
+        setError(t("googleFailed"));
+      }
     } finally {
       setLoading(false);
     }
@@ -60,17 +75,7 @@ function LoginForm() {
 
         <div className="bg-[#16132a] border border-[#252040] rounded-2xl p-6 shadow-[0_0_60px_rgba(157,91,244,0.1)] relative">
           {/* Language toggle */}
-          <button
-            onClick={toggle}
-            className="absolute top-4 right-4 h-7 px-2.5 flex items-center gap-1 rounded-lg bg-[#1c1830] border border-[#2e2950] hover:border-[#9d5bf4]/50 text-[#7a6d94] hover:text-[#c084fc] transition text-[10px] font-syne font-bold"
-            title="Toggle language"
-          >
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-            </svg>
-            {locale.toUpperCase()}
-          </button>
+          <LanguageSwitcher className="absolute top-4 right-4" />
           <h1 className="text-lg font-syne font-bold text-white mb-1">{t("welcomeBack")}</h1>
           <p className="text-sm text-[#7a6d94] mb-6">{t("signInToAccount")}</p>
 
@@ -85,14 +90,15 @@ function LoginForm() {
 
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 h-px bg-[#252040]" />
-            <span className="text-xs text-[#52525b]">o</span>
+            <span className="text-xs text-[#52525b]">{t("or")}</span>
             <div className="flex-1 h-px bg-[#252040]" />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-[#7a6d94] mb-1.5">{t("emailLabel")}</label>
+              <label htmlFor="login-email" className="block text-xs font-medium text-[#7a6d94] mb-1.5">{t("emailLabel")}</label>
               <input
+                id="login-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -104,8 +110,9 @@ function LoginForm() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#7a6d94] mb-1.5">{t("passwordLabel")}</label>
+              <label htmlFor="login-password" className="block text-xs font-medium text-[#7a6d94] mb-1.5">{t("passwordLabel")}</label>
               <input
+                id="login-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

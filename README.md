@@ -61,6 +61,7 @@ PUSHER_CLUSTER=your_pusher_cluster
 NEXT_PUBLIC_PUSHER_KEY=your_pusher_key
 NEXT_PUBLIC_PUSHER_CLUSTER=your_pusher_cluster
 
+APP_URL=http://localhost:3000
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 GOOGLE_CLIENT_ID=your_google_client_id
@@ -74,6 +75,28 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+### Production authentication
+
+For the deployed app, configure these values in Vercel for Production, Preview,
+and Development as appropriate:
+
+```env
+APP_URL=https://callm-ten.vercel.app
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/callm
+```
+
+`MONGODB_URI` must point to a hosted MongoDB database. A `localhost` URI cannot
+be reached from a Vercel Function.
+
+In the Google Cloud OAuth client, add this exact authorized redirect URI:
+
+```text
+https://callm-ten.vercel.app/api/auth/google/callback
+```
+
+Use `GET /api/health?deep=1` after deployment to verify that the application can
+reach MongoDB. The normal `GET /api/health` endpoint only checks the web process.
 
 ## Project Structure
 

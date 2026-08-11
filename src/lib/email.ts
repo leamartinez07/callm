@@ -15,14 +15,35 @@ function getTransporter() {
   });
 }
 
-export async function sendVerificationEmail(to: string, name: string, token: string) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+export function isEmailConfigured(): boolean {
+  return Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (character) => {
+    const entities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;",
+    };
+    return entities[character];
+  });
+}
+
+export async function sendVerificationEmail(
+  to: string,
+  name: string,
+  token: string,
+  appUrl: string
+) {
   const verifyUrl = `${appUrl}/api/auth/verify-email?token=${token}`;
 
   const html = `
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#18181b;color:#e4e4e7;border-radius:12px;">
       <h2 style="color:#a855f7;margin-bottom:8px;">Verify your callm email</h2>
-      <p style="color:#a1a1aa;margin-bottom:24px;">Hi ${name}, click the button below to verify your email address.</p>
+      <p style="color:#a1a1aa;margin-bottom:24px;">Hi ${escapeHtml(name)}, click the button below to verify your email address.</p>
       <a href="${verifyUrl}" style="display:inline-block;background:#a855f7;color:white;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;">Verify Email</a>
       <p style="color:#71717a;margin-top:24px;font-size:12px;">Link expires in 24 hours. If you didn't create an account, ignore this email.</p>
     </div>

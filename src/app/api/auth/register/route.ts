@@ -1,11 +1,12 @@
-import { connectDB } from "@/lib/mongodb";
+import { connectDB, isDatabaseUnavailable } from "@/lib/mongodb";
 import { signToken } from "@/lib/auth";
-import { parseBody, ok, conflict, serverError } from "@/lib/response";
+import { parseBody, ok, conflict, serverError, serviceUnavailable } from "@/lib/response";
 import { registerSchema } from "@/lib/schemas";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { sendVerificationEmail } from "@/lib/email";
+import { isEmailConfigured, sendVerificationEmail } from "@/lib/email";
+import { getAppUrl } from "@/lib/app-url";
 
 export async function POST(request: Request) {
   const { data, error } = await parseBody(request, registerSchema);
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
 
     // Check email uniqueness
     const existing = await User.findOne({ email: data.email });
-    if (existing) return conflict("Email already registered");
+    if (existing) return conflict("EMAIL_ALREADY_REGISTERED");
 
     // Hash password
     const hashed = await bcrypt.hash(data.password, 12);
@@ -32,10 +33,12 @@ export async function POST(request: Request) {
       verificationToken,
     });
 
-    // Send verification email (non-blocking)
-    sendVerificationEmail(data.email, data.name, verificationToken).catch(
-      (e) => console.error("[verify email]", e)
-    );
+    const emailVerificationSent = isEmailConfigured();
+    if (emailVerificationSent) {
+      sendVerificationEmail(data.email, data.name, verificationToken, getAppUrl(request)).catch(
+        (e) => console.error("[verify email]", e)
+      );
+    }
 
     const token = await signToken({
       sub: user._id.toString(),
@@ -43,9 +46,13 @@ export async function POST(request: Request) {
       name: user.name,
     });
 
-    return ok({ data: { user: user.toJSON(), token, emailVerificationSent: true }, status: 201 });
+    return ok({ data: { user: user.toJSON(), token, emailVerificationSent }, status: 201 });
   } catch (e) {
     console.error("[register]", e);
+    if (typeof e === "object" && e && "code" in e && e.code === 11000) {
+      return conflict("EMAIL_ALREADY_REGISTERED");
+    }
+    if (isDatabaseUnavailable(e)) return serviceUnavailable("AUTH_UNAVAILABLE");
     return serverError();
   }
 }

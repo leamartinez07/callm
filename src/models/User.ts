@@ -38,8 +38,6 @@ const UserSchema = new Schema<IUserDoc>(
   }
 );
 
-UserSchema.index({ email: 1 });
-
 const User: Model<IUserDoc> =
   mongoose.models.User ?? mongoose.model<IUserDoc>("User", UserSchema);
 

@@ -10,6 +10,7 @@ import {
   IconPlus, IconSearch, IconLogout, IconUserPlus, IconX, IconCheck, IconSettings,
 } from "./icons";
 import { useLocale } from "@/hooks/useLocale";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import type { IRoom, IUser, IFriend } from "@/types";
 
 interface SidebarProps {
@@ -72,7 +73,7 @@ export function Sidebar({
   onSelectRoom, onCreateRoom, onJoinRoom, onOpenDM,
   onLogout, currentUserId, token, onUserUpdate, onFriendsChange,
 }: SidebarProps) {
-  const { locale, t, toggle: toggleLocale } = useLocale();
+  const { t } = useLocale();
   const [search, setSearch]         = useState("");
   const [tab, setTab]               = useState<"rooms" | "dms" | "friends">("rooms");
   const [showCreate, setShowCreate] = useState(false);
@@ -160,17 +161,7 @@ export function Sidebar({
         <CallmLogo size="sm" />
         <div className="flex-1" />
         {/* Language toggle — prominent, right in the header */}
-        <button
-          onClick={toggleLocale}
-          className="h-7 px-2.5 flex items-center gap-1 rounded-lg bg-[#1c1830] border border-[#2e2950] hover:border-[#9d5bf4]/50 text-[#7a6d94] hover:text-[#c084fc] transition text-[10px] font-syne font-bold"
-          title="Toggle language"
-        >
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          </svg>
-          {locale.toUpperCase()}
-        </button>
+        <LanguageSwitcher />
         <InviteNotifications token={token} currentUserId={currentUserId} />
         <button
           onClick={() => setShowCreate(true)}
